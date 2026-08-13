@@ -1,4 +1,11 @@
 {
+  "name": "ai-smart-lab-planner-root",
+  "version": "1.0.0",
+  "scripts": {
+    "frontend": "cd frontend && npm run dev",
+    "backend": "cd backend && node server.js",
+    "start": "cd frontend && npm run dev"
+  },
   "dependencies": {
     "react-router-dom": "^7.18.2"
   }

@@ -1,0 +1,163 @@
+/* ── Register Page ── */
+.register-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f172a 0%, #172554 50%, #1e3a8a 100%);
+  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Decorative background circles */
+.register-container::before,
+.register-container::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.register-container::before {
+  width: 480px;
+  height: 480px;
+  background: rgba(59, 130, 246, 0.14);
+  top: -200px;
+  right: -160px;
+  filter: blur(3px);
+}
+
+.register-container::after {
+  width: 520px;
+  height: 520px;
+  background: rgba(96, 165, 250, 0.11);
+  bottom: -260px;
+  left: -170px;
+  filter: blur(3px);
+}
+
+/* Card */
+.register-card {
+  width: 440px;
+  max-width: 92%;
+  padding: 42px 45px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 22px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  animation: slideUp 0.45s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.register-card h1 {
+  margin: 0 0 6px;
+  text-align: center;
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.register-card > p {
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+/* Inputs */
+.register-card .input-group {
+  margin-bottom: 18px;
+}
+
+.register-card .input-group label {
+  display: block;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 7px;
+}
+
+.register-card .input-group input {
+  width: 100%;
+  height: 48px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 14.5px;
+  color: #0f172a;
+  background: #f8fafc;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.register-card .input-group input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.register-card .input-group input::placeholder {
+  color: #94a3b8;
+}
+
+/* Register Button */
+.register-button {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  margin-top: 6px;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.28);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+
+.register-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.36);
+}
+
+.register-button:active {
+  transform: translateY(0);
+}
+
+/* Login Link */
+.login-link {
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+  margin-top: 24px;
+}
+
+.login-link span {
+  color: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: color 0.15s;
+}
+
+.login-link span:hover {
+  color: #4f46e5;
+  text-decoration: underline;
+}
