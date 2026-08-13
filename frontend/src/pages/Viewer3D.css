@@ -1,0 +1,177 @@
+.viewer3d-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #eef4ff, #ffffff 50%, #edf3ff);
+  padding: 30px;
+  color: #14213d;
+  box-sizing: border-box;
+}
+
+.viewer3d-header {
+  max-width: 1500px;
+  margin: 0 auto 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 30px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #dce5f2;
+  border-radius: 22px;
+  box-shadow: 0 12px 35px rgba(25, 55, 100, 0.1);
+}
+
+.viewer3d-header h1 {
+  margin: 0;
+  font-size: 38px;
+  font-weight: 800;
+  color: #173b8f;
+}
+
+.viewer3d-header p {
+  margin: 8px 0 0;
+  color: #667085;
+  font-size: 15px;
+}
+
+.viewer3d-badge {
+  background: linear-gradient(135deg, #173b8f, #3569d4);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 30px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 20px rgba(23, 59, 143, 0.25);
+}
+
+.viewer3d-container {
+  max-width: 1500px;
+  height: 720px;
+  margin: auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid #ccd7e6;
+  background: #f4f7fb;
+  box-shadow:
+    0 20px 50px rgba(20, 45, 90, 0.15),
+    inset 0 0 30px rgba(255, 255, 255, 0.7);
+}
+
+.viewer3d-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.reset-camera-btn {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  z-index: 10;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, #173b8f, #3569d4);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(23, 59, 143, 0.3);
+  transition: 0.2s ease;
+}
+
+.reset-camera-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(23, 59, 143, 0.4);
+}
+
+.lab-summary {
+  max-width: 1500px;
+  margin: 25px auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #dbe4f0;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(20, 45, 90, 0.08);
+  transition: 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(20, 45, 90, 0.12);
+}
+
+.summary-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #edf3ff;
+  border-radius: 14px;
+  font-size: 24px;
+}
+
+.summary-card small {
+  display: block;
+  font-size: 11px;
+  color: #718096;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 5px;
+  color: #173b8f;
+  font-size: 17px;
+}
+
+.viewer3d-help {
+  max-width: 1500px;
+  margin: 20px auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 35px;
+  color: #667085;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .viewer3d-page {
+    padding: 15px;
+  }
+
+  .viewer3d-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .viewer3d-header h1 {
+    font-size: 28px;
+  }
+
+  .viewer3d-container {
+    height: 600px;
+  }
+
+  .lab-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .viewer3d-help {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+}
