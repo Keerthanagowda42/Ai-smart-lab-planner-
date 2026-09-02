@@ -3,6 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, Line } from "@react-three/drei";
 import { useNavigate } from "react-router-dom";
 import { useProject } from "../context/ProjectContext";
+import { exportInstitutionalPDF, exportCADBlueprintSVG } from "../utils/pdfExporter";
 import * as THREE from "three";
 import "./Viewer3D.css";
 
@@ -405,89 +406,306 @@ function Chair({ position, rotation = [0, Math.PI, 0] }) {
 }
 
 // ---------- DYNAMIC MONITOR TEXTURE GENERATOR ----------
-function createMonitorTexture(pcName = "PC-1") {
+function createMonitorTexture(pcName = "PC-1", classroomMode = "normal") {
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 576;
   const ctx = canvas.getContext("2d");
 
-  // Background Gradient
-  const grad = ctx.createLinearGradient(0, 0, 1024, 576);
-  grad.addColorStop(0, "#080d18");
-  grad.addColorStop(1, "#0f172a");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 1024, 576);
+  const isTeacher = pcName.includes("TEACHER");
 
-  // Top Window Header Bar
-  ctx.fillStyle = "#161b22";
-  ctx.fillRect(0, 0, 1024, 50);
+  if (classroomMode === "lock") {
+    // ══════════════════════════════════════════════════════════
+    // MODE 1: STUDENT FOCUS SCREEN LOCK (CRIMSON CYBER SHIELD)
+    // ══════════════════════════════════════════════════════════
+    const grad = ctx.createRadialGradient(512, 288, 50, 512, 288, 600);
+    grad.addColorStop(0, "#2d0606");
+    grad.addColorStop(1, "#0a0101");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1024, 576);
 
-  // Red, Yellow, Green Window Control Dots
-  ctx.fillStyle = "#ef4444";
-  ctx.beginPath(); ctx.arc(30, 25, 10, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#eab308";
-  ctx.beginPath(); ctx.arc(65, 25, 10, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#22c55e";
-  ctx.beginPath(); ctx.arc(100, 25, 10, 0, Math.PI * 2); ctx.fill();
+    // Grid matrix background pattern
+    ctx.strokeStyle = "rgba(244, 63, 94, 0.08)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < 1024; x += 32) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 576); ctx.stroke();
+    }
+    for (let y = 0; y < 576; y += 32) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1024, y); ctx.stroke();
+    }
 
-  // Header Title Text
-  ctx.fillStyle = "#38bdf8";
-  ctx.font = "bold 22px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("AI SMART LAB OS v2.4", 512, 33);
+    // Top Header Banner
+    ctx.fillStyle = "#1e0308";
+    ctx.fillRect(0, 0, 1024, 46);
+    ctx.fillStyle = "#f43f5e";
+    ctx.font = "bold 18px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("🛡️ INSTITUTIONAL LAB SECURITY SYSTEM v4.2", 24, 29);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#ef4444";
+    ctx.fillText(isTeacher ? "● INSTRUCTOR MASTER (LOCK ACTIVE)" : "● SYSTEM RESTRICTED", 1000, 29);
 
-  // Live Green Indicator
-  ctx.fillStyle = "#22c55e";
-  ctx.font = "bold 20px sans-serif";
-  ctx.fillText("● LIVE", 940, 33);
-
-  // Outer Border Box Accent
-  ctx.strokeStyle = "#1e293b";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(20, 70, 984, 420);
-
-  // MAIN HEADING LINE 1: AI-BASED COMPUTER SYSTEM
-  ctx.fillStyle = "#00e5ff";
-  ctx.font = "900 38px sans-serif";
-  ctx.shadowColor = "#00e5ff";
-  ctx.shadowBlur = 15;
-  ctx.fillText("🤖 AI-BASED COMPUTER SYSTEM", 512, 160);
-  ctx.shadowBlur = 0;
-
-  // MAIN HEADING LINE 2: & NETWORK PLANNING
-  ctx.fillStyle = "#38bdf8";
-  ctx.font = "900 36px sans-serif";
-  ctx.fillText("& NETWORK PLANNING", 512, 230);
-
-  // SUBTITLE BADGE: FOR EDUCATIONAL INSTITUTIONS
-  ctx.fillStyle = "#1e293b";
-  if (ctx.roundRect) {
+    // Glowing Lock / Shield Graphic
+    ctx.save();
+    ctx.strokeStyle = "#f43f5e";
+    ctx.lineWidth = 4;
+    ctx.shadowColor = "#f43f5e";
+    ctx.shadowBlur = 25;
     ctx.beginPath();
-    ctx.roundRect(162, 280, 700, 70, 15);
-    ctx.fill();
+    ctx.arc(512, 175, 45, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.font = "50px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(isTeacher ? "🛑" : "🔒", 512, 192);
+    ctx.restore();
+
+    // Main Alert Text
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 32px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(isTeacher ? "STUDENT CONSOLES TEMPORARILY LOCKED" : "ATTENTION: SCREEN ACCESS RESTRICTED", 512, 275);
+
+    ctx.fillStyle = "#fda4af";
+    ctx.font = "bold 22px sans-serif";
+    ctx.fillText(isTeacher ? "All student terminals are currently blocked to direct attention to whiteboard." : "Instructor has paused individual system input for a lecture demonstration.", 512, 320);
+
+    // Focus Alert Badge
+    ctx.fillStyle = "#4c0519";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(162, 365, 700, 60, 12);
+      ctx.fill();
+    } else {
+      ctx.fillRect(162, 365, 700, 60);
+    }
+    ctx.strokeStyle = "#f43f5e";
+    ctx.lineWidth = 2;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(162, 365, 700, 60, 12);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#fecdd3";
+    ctx.font = "bold 19px sans-serif";
+    ctx.fillText("👀 PLEASE REDIRECT YOUR ATTENTION TO THE FRONT PRESENTATION SCREEN", 512, 403);
+
+    // Bottom Status Bar
+    ctx.fillStyle = "#1e0308";
+    ctx.fillRect(0, 520, 1024, 56);
+    ctx.fillStyle = "#fb7185";
+    ctx.font = "14px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`Console ID: ${pcName}  |  Policy: INSTRUCTOR_BROADCAST_OVERRIDE`, 24, 553);
+    ctx.textAlign = "right";
+    ctx.fillText("Status: Screen Locked (Session Preserved)", 1000, 553);
+
+  } else if (classroomMode === "broadcast") {
+    // ══════════════════════════════════════════════════════════
+    // MODE 2: SCREEN MIRRORING / BROADCAST PRESENTATION SLIDE
+    // ══════════════════════════════════════════════════════════
+    const grad = ctx.createLinearGradient(0, 0, 1024, 576);
+    grad.addColorStop(0, "#081b33");
+    grad.addColorStop(1, "#030a14");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1024, 576);
+
+    // Top Header Banner
+    ctx.fillStyle = "#0c284d";
+    ctx.fillRect(0, 0, 1024, 46);
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 17px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("📡 LIVE INSTRUCTOR SCREEN BROADCAST (MIRROR ACTIVE)", 24, 29);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#22c55e";
+    ctx.fillText("● 1080p 60fps FEED", 1000, 29);
+
+    // Presentation Slide Container
+    ctx.fillStyle = "rgba(15, 23, 42, 0.8)";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(40, 68, 944, 440, 16);
+      ctx.fill();
+    } else {
+      ctx.fillRect(40, 68, 944, 440);
+    }
+    ctx.strokeStyle = "#0284c7";
+    ctx.lineWidth = 2;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(40, 68, 944, 440, 16);
+      ctx.stroke();
+    }
+
+    // Slide Header
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 15px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("MODULE 4: AI SMART LAB & COMPUTER NETWORK PLANNING", 70, 110);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 28px sans-serif";
+    ctx.fillText("Topology Architecture & 3D WebGL Digital Twin Simulation", 70, 150);
+
+    // Flow Diagram inside slide
+    const boxes = [
+      { label: "1. SPATIAL SOLVER", sub: "Capacity & Safety Aisles", x: 80, y: 195, w: 240, h: 105, col: "#0284c7" },
+      { label: "2. STAR NETWORK", sub: "Gigabit Switch & CAT6", x: 390, y: 195, w: 240, h: 105, col: "#0ea5e9" },
+      { label: "3. ELECTRICAL & UPS", sub: "3-Phase Balancing & kVA", x: 700, y: 195, w: 240, h: 105, col: "#10b981" },
+    ];
+
+    boxes.forEach((b) => {
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(b.x, b.y, b.w, b.h);
+      ctx.strokeStyle = b.col;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(b.x, b.y, b.w, b.h);
+
+      ctx.fillStyle = b.col;
+      ctx.font = "bold 16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(b.label, b.x + b.w / 2, b.y + 42);
+
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "13px sans-serif";
+      ctx.fillText(b.sub, b.x + b.w / 2, b.y + 75);
+    });
+
+    // Connector Arrows
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 28px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("➔", 355, 255);
+    ctx.fillText("➔", 665, 255);
+
+    // Instructor info badge
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(70, 335, 884, 80);
+    ctx.strokeStyle = "#334155";
+    ctx.strokeRect(70, 335, 884, 80);
+
+    ctx.fillStyle = "#22c55e";
+    ctx.font = "bold 16px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("👨‍🏫 Instructor: Prof. Keerthana Gowda  |  Institution: HKBK College of Engineering", 95, 370);
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "13px sans-serif";
+    ctx.fillText("Follow the interactive code walkthrough on your workstation screen.", 95, 395);
+
+    // Bottom Status Bar
+    ctx.fillStyle = "#061324";
+    ctx.fillRect(0, 520, 1024, 56);
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "14px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`Terminal: ${pcName}  |  Stream: LOW_LATENCY_BROADCAST_CHANNEL_1`, 24, 553);
+    ctx.textAlign = "right";
+    ctx.fillText("Status: Mirroring Master Console Feed", 1000, 553);
+
   } else {
-    ctx.fillRect(162, 280, 700, 70);
+    // ══════════════════════════════════════════════════════════
+    // MODE 3: LIVE OS / VS CODE & PYTHON AI LAB IDE
+    // ══════════════════════════════════════════════════════════
+    ctx.fillStyle = "#181e29";
+    ctx.fillRect(0, 0, 1024, 576);
+
+    // Top Window Title Bar (Mac/Ubuntu style)
+    ctx.fillStyle = "#0f141c";
+    ctx.fillRect(0, 0, 1024, 42);
+
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath(); ctx.arc(22, 21, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#eab308";
+    ctx.beginPath(); ctx.arc(42, 21, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#22c55e";
+    ctx.beginPath(); ctx.arc(62, 21, 6, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "bold 14px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`AI Smart Lab IDE — [${pcName}]  —  main_planner.py`, 90, 26);
+
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#22c55e";
+    ctx.fillText("● ONLINE (1 Gbps Star Link)", 1000, 26);
+
+    // Left Sidebar (Explorer)
+    ctx.fillStyle = "#111722";
+    ctx.fillRect(0, 42, 200, 480);
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("EXPLORER: AI_LAB", 18, 68);
+
+    const files = [
+      { name: "📁 models/", col: "#cbd5e1" },
+      { name: "📄 main_planner.py", col: "#38bdf8" },
+      { name: "📄 network_star.json", col: "#eab308" },
+      { name: "📄 electrical_ups.py", col: "#4ade80" },
+      { name: "📄 digital_twin_3d.jsx", col: "#a855f7" },
+    ];
+    files.forEach((f, idx) => {
+      ctx.fillStyle = f.col;
+      ctx.font = "12px monospace";
+      ctx.fillText(f.name, 22, 100 + idx * 24);
+    });
+
+    // Code Editor Window
+    ctx.fillStyle = "#1e2638";
+    ctx.fillRect(200, 42, 824, 340);
+
+    const codeLines = [
+      { line: 1, text: "import numpy as np", col: "#f43f5e" },
+      { line: 2, text: "from ai_smart_lab import StarNetworkPlanner, PowerFactorSolver", col: "#f43f5e" },
+      { line: 3, text: "", col: "#ffffff" },
+      { line: 4, text: "# Initialize Multi-Constraint Lab Planning Framework", col: "#64748b" },
+      { line: 5, text: "lab = StarNetworkPlanner(workstations=28, room=(40, 30))", col: "#e2e8f0" },
+      { line: 6, text: "cabling = lab.calculate_manhattan_routes(slack=1.15)", col: "#38bdf8" },
+      { line: 7, text: "electrical_load = PowerFactorSolver.get_3phase_kw(pf=0.90)", col: "#4ade80" },
+      { line: 8, text: "print(f'✅ Optimization Complete: {cabling.total_meters}m CAT6')", col: "#fbbf24" },
+      { line: 9, text: "lab.export_3d_digital_twin(format='ThreeJS_WebGL')", col: "#38bdf8" },
+    ];
+
+    codeLines.forEach((c) => {
+      ctx.fillStyle = "#475569";
+      ctx.font = "12px monospace";
+      ctx.textAlign = "right";
+      ctx.fillText(`${c.line}`, 235, 78 + (c.line - 1) * 22);
+
+      ctx.fillStyle = c.col;
+      ctx.textAlign = "left";
+      ctx.fillText(c.text, 255, 78 + (c.line - 1) * 22);
+    });
+
+    // Bottom Interactive Terminal
+    ctx.fillStyle = "#0c1017";
+    ctx.fillRect(200, 382, 824, 140);
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 12px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("TERMINAL: bash (active node)", 215, 404);
+
+    ctx.fillStyle = "#22c55e";
+    ctx.font = "12px monospace";
+    ctx.fillText(`user@${pcName.toLowerCase()}:~$ python3 main_planner.py`, 215, 430);
+    ctx.fillText(`[AI Lab Engine] Solving spatial & electrical constraints... Done (0.014s)`, 215, 452);
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillText(`[Network Hub] Link established to 24-Port Switch Port #${(parseInt(pcName.replace(/\D/g, "") || "1") % 24) + 1} (1000BASE-T)`, 215, 474);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillText(`[Status] Workstation Ready. IP: 192.168.10.${100 + parseInt(pcName.replace(/\D/g, "") || "1")}`, 215, 496);
+
+    // Footer Status Bar
+    ctx.fillStyle = "#0284c7";
+    ctx.fillRect(0, 522, 1024, 54);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 13px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`  ⚡ CPU: 41.8°C (14% Load)  |  GPU: RTX 3050 (52°C)  |  RAM: 5.4/16 GB  |  ${pcName}`, 12, 552);
+    ctx.textAlign = "right";
+    ctx.fillText("UTF-8  |  Python 3.11  |  Star Topology  ", 1010, 552);
   }
-
-  ctx.fillStyle = "#f8fafc";
-  ctx.font = "bold 28px sans-serif";
-  ctx.fillText("FOR EDUCATIONAL INSTITUTIONS", 512, 326);
-
-  // Status Metrics Bar at Bottom
-  ctx.fillStyle = "#161b22";
-  ctx.fillRect(0, 500, 1024, 76);
-
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "bold 22px sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText("⚡ Load: 18.5 kW", 40, 545);
-
-  ctx.textAlign = "center";
-  ctx.fillText("🌐 Topology: Star Network", 512, 545);
-
-  ctx.textAlign = "right";
-  ctx.fillStyle = "#38bdf8";
-  ctx.fillText(`🖥️ ${pcName} Active`, 980, 545);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.needsUpdate = true;
@@ -495,8 +713,8 @@ function createMonitorTexture(pcName = "PC-1") {
 }
 
 // ---------- REAL WORKING MONITOR ----------
-function WorkingMonitor({ id = 1, pcName }) {
-  const texture = useMemo(() => createMonitorTexture(pcName || `PC-${id}`), [pcName, id]);
+function WorkingMonitor({ id = 1, pcName, classroomMode }) {
+  const texture = useMemo(() => createMonitorTexture(pcName || `PC-${id}`, classroomMode), [pcName, id, classroomMode]);
 
   return (
     <group>
@@ -522,7 +740,7 @@ function WorkingMonitor({ id = 1, pcName }) {
   );
 }
 
-function Workstation({ position, rotation = [0, 0, 0], id, pcName, onSelectPC }) {
+function Workstation({ position, rotation = [0, 0, 0], id, pcName, onSelectPC, classroomMode }) {
   return (
     <group
       position={position}
@@ -538,7 +756,7 @@ function Workstation({ position, rotation = [0, 0, 0], id, pcName, onSelectPC })
       <Box position={[1.15, 0.55, 0]} size={[0.13, 1.2, 1.3]} color="#71421f" />
 
       {/* Real Working Monitor */}
-      <WorkingMonitor id={id} pcName={pcName} />
+      <WorkingMonitor id={id} pcName={pcName} classroomMode={classroomMode} />
 
       {/* CPU Case */}
       <Box position={[-0.92, 1.55, 0.05]} size={[0.38, 0.82, 0.58]} color="#202833" />
@@ -567,8 +785,8 @@ function Workstation({ position, rotation = [0, 0, 0], id, pcName, onSelectPC })
 }
 
 // ---------- EXECUTIVE TEACHER DESK & CHAIR ----------
-function TeacherArea() {
-  const teacherTexture = useMemo(() => createMonitorTexture("TEACHER-MASTER"), []);
+function TeacherArea({ classroomMode }) {
+  const teacherTexture = useMemo(() => createMonitorTexture("TEACHER-MASTER", classroomMode), [classroomMode]);
 
   return (
     <group position={[0, 0, 5.2]}>
@@ -661,7 +879,7 @@ function TeacherArea() {
 // ---------- SERVER RACK ----------
 function ServerRack() {
   return (
-    <group position={[8.8, 2.25, -4.8]}>
+    <group position={[9.4, 2.25, -5.6]}>
       <Box size={[2.0, 4.5, 1.25]} color="#11151b" metalness={0.35} />
 
       {[...Array(7)].map((_, i) => (
@@ -917,7 +1135,7 @@ function NetworkCables({ workstationPositions }) {
               opacity={0.75}
             />
 
-            {/* Animated Fiber Optic Data Pulse */}
+{/* Animated Fiber Optic Data Pulse */}
             <DataPulse p={p} index={i} />
 
 {/* Vertical Desktop Cable Riser Conduit */}
@@ -929,50 +1147,130 @@ function NetworkCables({ workstationPositions }) {
   );
 }
 
+// ---------- THERMAL HEATMAP & AIRFLOW SIMULATION ----------
+function ThermalAirflowOverlay() {
+  return (
+    <group>
+      {/* 1. Server Rack High Heat Dissipation Zone */}
+      <mesh position={[8.8, 2.5, -4.8]}>
+        <sphereGeometry args={[2.2, 16, 16]} />
+        <meshBasicMaterial color="#ef4444" transparent opacity={0.22} wireframe />
+      </mesh>
+      <mesh position={[8.8, 2.5, -4.8]}>
+        <sphereGeometry args={[1.5, 16, 16]} />
+        <meshBasicMaterial color="#f97316" transparent opacity={0.15} />
+      </mesh>
+      <Html position={[8.8, 4.8, -4.8]} center distanceFactor={10}>
+        <div style={{
+          background: "rgba(239, 68, 68, 0.92)", color: "white", padding: "2px 8px",
+          borderRadius: "6px", fontSize: "10px", fontWeight: 800, whiteSpace: "nowrap",
+          boxShadow: "0 0 10px rgba(239, 68, 68, 0.6)", fontFamily: "sans-serif"
+        }}>
+          🔥 34.5°C Server Exhaust Zone
+        </div>
+      </Html>
+
+      {/* 2. AC Cooling Airflow Flow Cones */}
+      <group position={[8.2, 5.5, -6.5]}>
+        <mesh rotation={[0.4, -0.6, 0]}>
+          <coneGeometry args={[3.2, 6.5, 16, 1, true]} />
+          <meshBasicMaterial color="#00e5ff" transparent opacity={0.18} wireframe />
+        </mesh>
+        <Html position={[-1.5, -1.0, 2.0]} center distanceFactor={10}>
+          <div style={{
+            background: "rgba(2, 132, 199, 0.92)", color: "white", padding: "2px 8px",
+            borderRadius: "6px", fontSize: "10px", fontWeight: 800, whiteSpace: "nowrap",
+            boxShadow: "0 0 10px rgba(2, 132, 199, 0.6)", fontFamily: "sans-serif"
+          }}>
+            ❄️ 19.0°C Inverter AC Intake Flow
+          </div>
+        </Html>
+      </group>
+
+      {/* 3. Workstation Ambient Thermal Gradient */}
+      {[-4.5, 4.5].map((x, i) => (
+        <mesh key={i} position={[x, 1.2, -1.0]}>
+          <boxGeometry args={[5.5, 1.2, 7.5]} />
+          <meshBasicMaterial color="#eab308" transparent opacity={0.08} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+// ---------- OVERHEAD CABLE TRAYS & DROP CONDUITS ----------
+function CableTrays() {
+  return (
+    <group position={[0, 6.2, 0]}>
+      {/* Suspended Steel Wire Mesh Cable Trays */}
+      <Box position={[0, 0, -5.8]} size={[17.6, 0.1, 0.8]} color="#94a3b8" metalness={0.8} />
+      <Box position={[-8.5, 0, 0]} size={[0.8, 0.1, 11.5]} color="#94a3b8" metalness={0.8} />
+      <Box position={[8.5, 0, 0]} size={[0.8, 0.1, 11.5]} color="#94a3b8" metalness={0.8} />
+
+      {/* Yellow Structured CAT6 Backbone Lines running inside tray */}
+      <Line
+        points={[
+          [8.8, 0.08, -4.8],
+          [8.5, 0.08, -5.8],
+          [-8.5, 0.08, -5.8],
+          [-8.5, 0.08, 4.5],
+        ]}
+        color="#eab308"
+        lineWidth={3.5}
+      />
+      <Line
+        points={[
+          [8.8, 0.08, -4.8],
+          [8.5, 0.08, -5.8],
+          [8.5, 0.08, 4.5],
+        ]}
+        color="#38bdf8"
+        lineWidth={3.5}
+      />
+
+      {/* Vertical Drop Conduits to Workstation Clusters */}
+      {[-4.5, 4.5].map((x, i) => (
+        <group key={i} position={[x, -3.0, -1.0]}>
+          <mesh position={[0, 0, 0]}>
+            <cylinderGeometry args={[0.06, 0.06, 5.8, 12]} />
+            <meshStandardMaterial color="#cbd5e1" metalness={0.85} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 // ---------- MAIN LAB SCENE ----------
-function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMode = "day", aiPlan, onSelectPC }) {
+function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMode = "day", aiPlan, onSelectPC, classroomMode, showCableTrays }) {
   const controlsRef = useRef();
 
-  // Dynamic Room Layout Calculator (Grid, U-Shape, Team Pods, High Density, Boardroom, Chevron)
+  // Dynamic Room Layout Calculator generating exact workstation count based on user input (pcCount)
+  const pcCountTarget = aiPlan?.spatial?.numComputers || projectData?.numComputers || 24;
+
   const workstationGrid = useMemo(() => {
     if (layoutType === "u-shape") {
       const items = [];
       let count = 1;
-      // Left wall (7 PCs facing right)
       [-4.8, -3.2, -1.6, 0.0, 1.6, 3.2, 4.8].forEach((z) => {
-        items.push({
-          pos: [-7.8, 0, z],
-          rot: [0, Math.PI / 2, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+        items.push({ pos: [-7.8, 0, z], rot: [0, Math.PI / 2, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      // Back wall (6 PCs facing forward)
       [-6.0, -3.6, -1.2, 1.2, 3.6, 6.0].forEach((x) => {
-        items.push({
-          pos: [x, 0, 4.8],
-          rot: [0, 0, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+        items.push({ pos: [x, 0, 4.8], rot: [0, 0, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      // Right wall (7 PCs facing left)
       [-4.8, -3.2, -1.6, 0.0, 1.6, 3.2, 4.8].forEach((z) => {
-        items.push({
-          pos: [7.8, 0, z],
-          rot: [0, -Math.PI / 2, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+        items.push({ pos: [7.8, 0, z], rot: [0, -Math.PI / 2, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      return items;
+      return items.slice(0, pcCountTarget);
     }
 
     if (layoutType === "pods") {
-      // 6 Team Pods (4 PCs per Pod island)
       const podCenters = [
-        [-5.2, -3.0], [5.2, -3.0],
-        [-5.2, 0.5],  [5.2, 0.5],
+        [-5.2, -2.8], [5.2, -2.8],
+        [-5.2, 0.6],  [5.2, 0.6],
         [-5.2, 4.0],  [5.2, 4.0],
       ];
       const items = [];
@@ -985,161 +1283,122 @@ function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMo
           { dx: 1.35, dz: 0.7, rot: [0, -Math.PI / 2, 0] },
         ];
         offsets.forEach(({ dx, dz, rot }) => {
-          items.push({
-            pos: [cx + dx, 0, cz + dz],
-            rot,
-            pcName: `PC-${count < 10 ? "0" + count : count}`,
-          });
+          items.push({ pos: [cx + dx, 0, cz + dz], rot, pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
           count++;
         });
       });
-      return items;
+      return items.slice(0, pcCountTarget);
     }
 
     if (layoutType === "high-density") {
-      // 2 Long Dual Back-to-Back Rows
       const items = [];
       let count = 1;
       const xPositions = [-7.2, -5.9, -4.6, -3.3, -2.0, -0.7, 0.7, 2.0, 3.3, 4.6, 5.9, 7.2];
-      // Front Row (12 PCs)
       xPositions.forEach((x) => {
-        items.push({
-          pos: [x, 0, -3.2],
-          rot: [0, 0, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+        items.push({ pos: [x, 0, -2.8], rot: [0, 0, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      // Back Row (12 PCs)
       xPositions.forEach((x) => {
-        items.push({
-          pos: [x, 0, 1.8],
-          rot: [0, Math.PI, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+        items.push({ pos: [x, 0, 1.8], rot: [0, Math.PI, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      return items;
+      return items.slice(0, pcCountTarget);
     }
 
     if (layoutType === "hollow-square") {
-      // Hollow Square / Boardroom (24 PCs around perimeter facing inside)
       const items = [];
       let count = 1;
-      // Front Row (6 PCs facing back)
-      [-6.0, -3.6, -1.2, 1.2, 3.6, 6.0].forEach((x) => {
-        items.push({
-          pos: [x, 0, -4.2],
-          rot: [0, Math.PI, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+      [-5.5, -3.3, -1.1, 1.1, 3.3, 5.5].forEach((x) => {
+        items.push({ pos: [x, 0, -3.5], rot: [0, 0, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      // Right Column (6 PCs facing left)
-      [-3.0, -1.5, 0.0, 1.5, 3.0, 4.5].forEach((z) => {
-        items.push({
-          pos: [7.2, 0, z],
-          rot: [0, -Math.PI / 2, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+      [-2.0, 0.2, 2.4].forEach((z) => {
+        items.push({ pos: [6.8, 0, z], rot: [0, -Math.PI / 2, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      // Back Row (6 PCs facing forward)
-      [6.0, 3.6, 1.2, -1.2, -3.6, -6.0].forEach((x) => {
-        items.push({
-          pos: [x, 0, 4.8],
-          rot: [0, 0, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+      [5.5, 3.3, 1.1, -1.1, -3.3, -5.5].forEach((x) => {
+        items.push({ pos: [x, 0, 4.5], rot: [0, Math.PI, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      // Left Column (6 PCs facing right)
-      [4.5, 3.0, 1.5, 0.0, -1.5, -3.0].forEach((z) => {
-        items.push({
-          pos: [-7.2, 0, z],
-          rot: [0, Math.PI / 2, 0],
-          pcName: `PC-${count < 10 ? "0" + count : count}`,
-        });
+      [2.4, 0.2, -2.0].forEach((z) => {
+        items.push({ pos: [-6.8, 0, z], rot: [0, Math.PI / 2, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
         count++;
       });
-      return items;
+      return items.slice(0, pcCountTarget);
     }
 
     if (layoutType === "chevron") {
-      // Chevron Angled Auditorium (24 PCs angled 25° towards center teacher desk)
       const items = [];
       let count = 1;
-      const rowsZ = [-4.2, -2.0, 0.5, 3.0];
-      rowsZ.forEach((z) => {
-        // Left side angled 25° clockwise
-        [-6.5, -4.2, -1.9].forEach((x) => {
-          items.push({
-            pos: [x, 0, z + (x + 6.5) * 0.15],
-            rot: [0, 0.45, 0],
-            pcName: `PC-${count < 10 ? "0" + count : count}`,
-          });
+      const rows = [-3.0, -0.8, 1.4, 3.6];
+      rows.forEach((z) => {
+        [-6.8, -4.5, -2.2].forEach((x) => {
+          items.push({ pos: [x, 0, z - (x + 2.2) * 0.15], rot: [0, -0.15, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
           count++;
         });
-        // Right side angled 25° counter-clockwise
-        [1.9, 4.2, 6.5].forEach((x) => {
-          items.push({
-            pos: [x, 0, z + (6.5 - x) * 0.15],
-            rot: [0, -0.45, 0],
-            pcName: `PC-${count < 10 ? "0" + count : count}`,
-          });
+        [2.2, 4.5, 6.8].forEach((x) => {
+          items.push({ pos: [x, 0, z + (x - 2.2) * 0.15], rot: [0, 0.15, 0], pcName: `PC-${count < 10 ? "0" + count : count}`, id: count });
           count++;
         });
       });
-      return items;
+      return items.slice(0, pcCountTarget);
     }
 
-    // Default Grid (Dual 4x3 Blocks)
-    return [
-      // Left side block (Row 1 to Row 4: PC-01 to PC-12)
-      { pos: [-6.8, 0, -4.5], rot: [0, 0, 0], pcName: "PC-01" },
-      { pos: [-4.5, 0, -4.5], rot: [0, 0, 0], pcName: "PC-02" },
-      { pos: [-2.2, 0, -4.5], rot: [0, 0, 0], pcName: "PC-03" },
+    // Default Dual Grid generated dynamically to exact user pcCountTarget
+    const items = [];
+    let pcIdx = 1;
+    const rowZ = [-3.2, -1.0, 1.2, 3.4, 5.6];
+    const leftX = [-6.8, -4.5, -2.2];
+    const rightX = [2.2, 4.5, 6.8];
 
-      { pos: [-6.8, 0, -2.2], rot: [0, 0, 0], pcName: "PC-04" },
-      { pos: [-4.5, 0, -2.2], rot: [0, 0, 0], pcName: "PC-05" },
-      { pos: [-2.2, 0, -2.2], rot: [0, 0, 0], pcName: "PC-06" },
+    for (let r = 0; r < rowZ.length && pcIdx <= pcCountTarget; r++) {
+      const z = rowZ[r];
+      for (let c = 0; c < leftX.length && pcIdx <= pcCountTarget; c++) {
+        const x = leftX[c];
+        items.push({ pos: [x, 0, z], rot: [0, 0, 0], pcName: `PC-${pcIdx < 10 ? "0" + pcIdx : pcIdx}`, id: pcIdx });
+        pcIdx++;
+      }
+      for (let c = 0; c < rightX.length && pcIdx <= pcCountTarget; c++) {
+        const x = rightX[c];
+        items.push({ pos: [x, 0, z], rot: [0, 0, 0], pcName: `PC-${pcIdx < 10 ? "0" + pcIdx : pcIdx}`, id: pcIdx });
+        pcIdx++;
+      }
+    }
 
-      { pos: [-6.8, 0, 0.1], rot: [0, 0, 0], pcName: "PC-07" },
-      { pos: [-4.5, 0, 0.1], rot: [0, 0, 0], pcName: "PC-08" },
-      { pos: [-2.2, 0, 0.1], rot: [0, 0, 0], pcName: "PC-09" },
+    return items;
+  }, [pcCountTarget, layoutType]);
 
-      { pos: [-6.8, 0, 2.4], rot: [0, 0, 0], pcName: "PC-10" },
-      { pos: [-4.5, 0, 2.4], rot: [0, 0, 0], pcName: "PC-11" },
-      { pos: [-2.2, 0, 2.4], rot: [0, 0, 0], pcName: "PC-12" },
+  // ---------- ACTIVE FIRST-PERSON WALKTHROUGH CONTROLLER ----------
+  const keysPressed = useRef({});
+  const walkPos = useRef(new THREE.Vector3(0, 1.8, 6.0));
+  const walkYaw = useRef(0);
+  const walkClock = useRef(0);
 
-      // Right side block (Row 1 to Row 4: PC-13 to PC-24)
-      { pos: [2.2, 0, -4.5], rot: [0, 0, 0], pcName: "PC-13" },
-      { pos: [4.5, 0, -4.5], rot: [0, 0, 0], pcName: "PC-14" },
-      { pos: [6.8, 0, -4.5], rot: [0, 0, 0], pcName: "PC-15" },
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      keysPressed.current[e.code] = true;
+    };
+    const handleKeyUp = (e) => {
+      keysPressed.current[e.code] = false;
+    };
 
-      { pos: [2.2, 0, -2.2], rot: [0, 0, 0], pcName: "PC-16" },
-      { pos: [4.5, 0, -2.2], rot: [0, 0, 0], pcName: "PC-17" },
-      { pos: [6.8, 0, -2.2], rot: [0, 0, 0], pcName: "PC-18" },
-
-      { pos: [2.2, 0, 0.1], rot: [0, 0, 0], pcName: "PC-19" },
-      { pos: [4.5, 0, 0.1], rot: [0, 0, 0], pcName: "PC-20" },
-      { pos: [6.8, 0, 0.1], rot: [0, 0, 0], pcName: "PC-21" },
-
-      { pos: [2.2, 0, 2.4], rot: [0, 0, 0], pcName: "PC-22" },
-      { pos: [4.5, 0, 2.4], rot: [0, 0, 0], pcName: "PC-23" },
-      { pos: [6.8, 0, 2.4], rot: [0, 0, 0], pcName: "PC-24" },
-    ];
-  }, [layoutType]);
-
-  const workstationPositions = useMemo(() => {
-    return workstationGrid.map((w) => w.pos);
-  }, [workstationGrid]);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   React.useEffect(() => {
     if (controlsRef.current) {
       if (cameraMode === "top") {
         controlsRef.current.object.position.set(0, 28, 0.1);
         controlsRef.current.target.set(0, 0, 0);
+      } else if (cameraMode === "walk") {
+        walkPos.current.set(0, 1.8, 6.0);
+        controlsRef.current.object.position.set(0, 1.8, 6.0);
+        controlsRef.current.target.set(0, 1.8, 0.0);
       } else if (cameraMode === "teacher") {
         controlsRef.current.object.position.set(0, 4.2, 7.5);
         controlsRef.current.target.set(0, 2.5, -4);
@@ -1150,6 +1409,63 @@ function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMo
       controlsRef.current.update();
     }
   }, [resetSignal, cameraMode]);
+
+  useFrame((state, delta) => {
+    if (cameraMode === "walk" && controlsRef.current) {
+      const keys = keysPressed.current;
+      const isSprint = keys["ShiftLeft"] || keys["ShiftRight"];
+      const speed = (isSprint ? 6.5 : 3.5) * delta;
+
+      const camera = controlsRef.current.object;
+      const forward = new THREE.Vector3();
+      camera.getWorldDirection(forward);
+      forward.y = 0;
+      forward.normalize();
+
+      const right = new THREE.Vector3();
+      right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+      let moveX = 0;
+      let moveZ = 0;
+
+      if (keys["KeyW"] || keys["ArrowUp"]) {
+        moveX += forward.x * speed;
+        moveZ += forward.z * speed;
+      }
+      if (keys["KeyS"] || keys["ArrowDown"]) {
+        moveX -= forward.x * speed;
+        moveZ -= forward.z * speed;
+      }
+      if (keys["KeyA"] || keys["ArrowLeft"]) {
+        moveX -= right.x * speed;
+        moveZ -= right.z * speed;
+      }
+      if (keys["KeyD"] || keys["ArrowRight"]) {
+        moveX += right.x * speed;
+        moveZ += right.z * speed;
+      }
+
+      const isMoving = Math.abs(moveX) > 0.0001 || Math.abs(moveZ) > 0.0001;
+
+      if (isMoving) {
+        walkClock.current += delta * (isSprint ? 14 : 9);
+        const bob = Math.sin(walkClock.current) * 0.04;
+
+        walkPos.current.x = THREE.MathUtils.clamp(walkPos.current.x + moveX, -10.5, 10.5);
+        walkPos.current.z = THREE.MathUtils.clamp(walkPos.current.z + moveZ, -6.5, 6.8);
+        walkPos.current.y = 1.8 + bob;
+
+        const targetOffset = new THREE.Vector3().subVectors(controlsRef.current.target, camera.position);
+        camera.position.copy(walkPos.current);
+        controlsRef.current.target.copy(walkPos.current).add(targetOffset);
+        controlsRef.current.update();
+      }
+    }
+  });
+
+  const workstationPositions = useMemo(() => {
+    return workstationGrid.map((w) => w.pos);
+  }, [workstationGrid]);
 
   return (
     <>
@@ -1171,8 +1487,8 @@ function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMo
       )}
 
       <Room
-        roomLength={aiPlan?.spatial?.roomLength || 40}
-        roomWidth={aiPlan?.spatial?.roomWidth || 30}
+        roomLength={40}
+        roomWidth={30}
       />
       <CeilingLights />
 
@@ -1186,7 +1502,7 @@ function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMo
       <FireExtinguisher />
       <ServerRack />
       <UPSUnit />
-      <TeacherArea />
+      <TeacherArea classroomMode={classroomMode} />
 
       {/* Wall Sockets — Left Wall (Short Labels Below Sockets) */}
       <Socket position={[-10.35, 2.0, -5.4]} rotation={[0, Math.PI / 2, 0]} label="ELECTRICAL BOARD" shortLabel="ELECTRICAL SOCKET" />
@@ -1199,10 +1515,13 @@ function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMo
 
       {/* Workstations rendered dynamically with position & rotation */}
       {workstationGrid.map((item, i) => (
-        <Workstation key={i} position={item.pos} rotation={item.rot || [0, 0, 0]} id={i + 1} pcName={item.pcName} onSelectPC={onSelectPC} />
+        <Workstation key={i} position={item.pos} rotation={item.rot || [0, 0, 0]} id={i + 1} pcName={item.pcName} onSelectPC={onSelectPC} classroomMode={classroomMode} />
       ))}
 
       <NetworkCables workstationPositions={workstationPositions} />
+
+      {/* Realism Overlays */}
+      {showCableTrays && <CableTrays />}
 
       {/* Central Aisle Emergency Exit Path straight to front Exit door */}
       <Line
@@ -1223,9 +1542,9 @@ function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMo
         enablePan
         enableZoom
         enableRotate
-        minDistance={10}
+        minDistance={cameraMode === "walk" ? 0.5 : 10}
         maxDistance={38}
-        target={[0, 2.8, -1]}
+        target={cameraMode === "walk" ? [0, 2.2, -4] : [0, 2.8, -1]}
       />
     </>
   );
@@ -1234,14 +1553,33 @@ function LabScene({ resetSignal, cameraMode = "3d", layoutType = "grid", themeMo
 // ---------- MAIN PAGE ----------
 export default function Viewer3D() {
   const navigate = useNavigate();
-  const { aiPlan, projectData } = useProject();
+  const { aiPlan, projectData, updateProject } = useProject();
   const [resetSignal, setResetSignal] = useState(0);
   const [cameraMode, setCameraMode] = useState("3d");
   const [layoutMode, setLayoutMode] = useState("grid");
-  const [themeMode, setThemeMode] = useState("day");
+  const [themeMode, setThemeMode] = useState("neon");
   const [selectedPC, setSelectedPC] = useState(null);
+  const [classroomMode, setClassroomMode] = useState("normal");
+  const [showCableTrays, setShowCableTrays] = useState(false);
+  const [pingRunning, setPingRunning] = useState(false);
+  const [pingOutput, setPingOutput] = useState(null);
 
-  const pcCount = aiPlan?.spatial?.numComputers || 28;
+  const handleRunPing = () => {
+    if (!selectedPC) return;
+    setPingRunning(true);
+    setPingOutput([`PING 192.168.1.${100 + (selectedPC.id || 1)} with 32 bytes of data:`]);
+    setTimeout(() => {
+      setPingOutput((prev) => [
+        ...prev,
+        `Reply from 192.168.1.${100 + (selectedPC.id || 1)}: bytes=32 time=0.42ms TTL=64`,
+        `Reply from 192.168.1.${100 + (selectedPC.id || 1)}: bytes=32 time=0.38ms TTL=64`,
+        `Packets: Sent = 2, Received = 2, Lost = 0 (0% loss)`,
+      ]);
+      setPingRunning(false);
+    }, 800);
+  };
+
+  const pcCount = aiPlan?.spatial?.numComputers || projectData?.numComputers || 28;
   const electricalKw = aiPlan?.electrical?.totalKW || 18.5;
   const topology = aiPlan?.network?.topology || "STAR TOPOLOGY";
 
@@ -1290,6 +1628,7 @@ export default function Viewer3D() {
           <div className="viewer3d-badge" style={{ margin: 0 }}>
             • LIVE 3D LAB MODEL
           </div>
+
           <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", padding: "4px 6px", borderRadius: "10px", border: "1px solid #cbd5e1", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
             {[
               { id: "grid", label: "📐 Grid Columns" },
@@ -1301,7 +1640,10 @@ export default function Viewer3D() {
             ].map((layout) => (
               <button
                 key={layout.id}
-                onClick={() => setLayoutMode(layout.id)}
+                onClick={() => {
+                  setLayoutMode(layout.id);
+                  updateProject({ seatingPreference: layout.id });
+                }}
                 style={{
                   padding: "6px 12px",
                   borderRadius: "7px",
@@ -1320,8 +1662,9 @@ export default function Viewer3D() {
           </div>
         </div>
 
-        {/* Top Right View Angle Controls & Theme Switcher */}
-        <div style={{ position: "absolute", right: 22, top: 20, zIndex: 10, display: "flex", gap: 8 }}>
+        {/* Top Right View Angle Controls & Feature Toggles */}
+        <div style={{ position: "absolute", right: 22, top: 20, zIndex: 10, display: "flex", gap: 8, alignItems: "center" }}>
+
           <button
             onClick={() => setThemeMode(themeMode === "day" ? "neon" : "day")}
             style={{
@@ -1331,67 +1674,87 @@ export default function Viewer3D() {
               background: themeMode === "neon" ? "#0f172a" : "#ffffff",
               color: themeMode === "neon" ? "#38bdf8" : "#1e293b",
               fontWeight: 700,
-              fontSize: "13px",
+              fontSize: "12px",
               cursor: "pointer",
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             }}
           >
-            {themeMode === "day" ? "🌙 Dark Neon" : "☀️ Cyber Day"}
+            {themeMode === "day" ? "🌙 Dark Neon" : "☀️ Day"}
           </button>
+
           <button
             onClick={() => { setCameraMode("3d"); setResetSignal((x) => x + 1); }}
             style={{
-              padding: "8px 14px",
+              padding: "8px 12px",
               borderRadius: "8px",
               border: "1px solid #cbd5e1",
               background: cameraMode === "3d" ? "#2563eb" : "#ffffff",
               color: cameraMode === "3d" ? "#ffffff" : "#1e293b",
               fontWeight: 700,
-              fontSize: "13px",
+              fontSize: "12px",
               cursor: "pointer",
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             }}
           >
-            🧊 3D View
+            🧊 3D
           </button>
+
+          <button
+            onClick={() => { setCameraMode("walk"); setResetSignal((x) => x + 1); }}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "8px",
+              border: "1px solid #cbd5e1",
+              background: cameraMode === "walk" ? "#2563eb" : "#ffffff",
+              color: cameraMode === "walk" ? "#ffffff" : "#1e293b",
+              fontWeight: 700,
+              fontSize: "12px",
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            }}
+          >
+            🚶 Walk-in
+          </button>
+
           <button
             onClick={() => { setCameraMode("top"); setResetSignal((x) => x + 1); }}
             style={{
-              padding: "8px 14px",
+              padding: "8px 12px",
               borderRadius: "8px",
               border: "1px solid #cbd5e1",
               background: cameraMode === "top" ? "#2563eb" : "#ffffff",
               color: cameraMode === "top" ? "#ffffff" : "#1e293b",
               fontWeight: 700,
-              fontSize: "13px",
+              fontSize: "12px",
               cursor: "pointer",
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             }}
           >
-            🗺️ Top Floorplan
+            📐 2D CAD
           </button>
+
           <button
-            onClick={() => { setCameraMode("teacher"); setResetSignal((x) => x + 1); }}
+            onClick={() => exportInstitutionalPDF(projectData, aiPlan)}
             style={{
               padding: "8px 14px",
               borderRadius: "8px",
-              border: "1px solid #cbd5e1",
-              background: cameraMode === "teacher" ? "#2563eb" : "#ffffff",
-              color: cameraMode === "teacher" ? "#ffffff" : "#1e293b",
-              fontWeight: 700,
-              fontSize: "13px",
+              border: "none",
+              background: "linear-gradient(135deg, #0284c7, #2563eb)",
+              color: "#ffffff",
+              fontWeight: 800,
+              fontSize: "12px",
               cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              boxShadow: "0 2px 10px rgba(2, 132, 199, 0.3)",
             }}
           >
-            👩‍🏫 Instructor View
+            📄 PDF Report
           </button>
         </div>
 
-        {/* Floating Live Infrastructure HUD */}
+        {/* Live Metrics Telemetry Bar */}
         <div style={{
-          position: "absolute", bottom: 20, right: 22, zIndex: 10,
-          background: themeMode === "neon" ? "rgba(3, 7, 18, 0.92)" : "rgba(15, 23, 42, 0.9)",
+          position: "absolute", bottom: 22, left: 22, zIndex: 10,
+          background: themeMode === "neon" ? "rgba(15, 23, 42, 0.94)" : "rgba(30, 41, 59, 0.94)",
           backdropFilter: "blur(12px)",
           border: "1px solid rgba(56, 189, 248, 0.35)", borderRadius: 16,
           padding: "12px 20px", color: "white", boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
@@ -1413,67 +1776,97 @@ export default function Viewer3D() {
           </div>
         </div>
 
-        {/* Workstation Click Spec Sheet Modal */}
+        {/* Workstation Click Spec Sheet & Live Diagnostic Modal */}
         {selectedPC && (
           <div style={{
             position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-            zIndex: 100, width: 400, padding: 24, borderRadius: 20,
-            background: "rgba(15, 23, 42, 0.94)", backdropFilter: "blur(12px)",
-            border: "1px solid rgba(56, 189, 248, 0.4)", color: "#f8fafc",
-            boxShadow: "0 20px 50px rgba(0,0,0,0.6)", fontFamily: "sans-serif"
+            zIndex: 100, width: 440, padding: 24, borderRadius: 20,
+            background: "rgba(15, 23, 42, 0.96)", backdropFilter: "blur(14px)",
+            border: "1px solid rgba(56, 189, 248, 0.5)", color: "#f8fafc",
+            boxShadow: "0 25px 60px rgba(0,0,0,0.7)", fontFamily: "sans-serif"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 28 }}>🖥️</span>
                 <div>
                   <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: "#38bdf8" }}>{selectedPC.pcName}</h3>
-                  <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 700 }}>● ONLINE (1 Gbps Star Node)</span>
+                  <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 700 }}>● ONLINE (1 Gbps Managed Port #{((selectedPC.id || 1) % 24) + 1})</span>
                 </div>
               </div>
               <button
-                onClick={() => setSelectedPC(null)}
+                onClick={() => { setSelectedPC(null); setPingOutput(null); }}
                 style={{ background: "none", border: "none", color: "#94a3b8", fontSize: 20, cursor: "pointer", fontWeight: 900 }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: 13, background: "rgba(255,255,255,0.06)", padding: 16, borderRadius: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 12, background: "rgba(255,255,255,0.06)", padding: 14, borderRadius: 12 }}>
               <div>
                 <small style={{ color: "#94a3b8", display: "block" }}>Processor (CPU)</small>
-                <strong>Intel Core i7 13700K</strong>
+                <strong>Intel Core i7 13700K (4.2 GHz)</strong>
+              </div>
+              <div>
+                <small style={{ color: "#94a3b8", display: "block" }}>Core Temp / Load</small>
+                <strong style={{ color: "#22c55e" }}>41.8°C · 14% Load</strong>
               </div>
               <div>
                 <small style={{ color: "#94a3b8", display: "block" }}>Memory (RAM)</small>
-                <strong>16 GB DDR5 4800MHz</strong>
+                <strong>16 GB DDR5 5600MHz</strong>
               </div>
               <div>
-                <small style={{ color: "#94a3b8", display: "block" }}>Graphics (GPU)</small>
-                <strong>NVIDIA RTX 3050 8GB</strong>
+                <small style={{ color: "#94a3b8", display: "block" }}>GPU Temp</small>
+                <strong style={{ color: "#38bdf8" }}>52.4°C · RTX 3050</strong>
               </div>
               <div>
-                <small style={{ color: "#94a3b8", display: "block" }}>Storage</small>
-                <strong>512 GB NVMe SSD</strong>
+                <small style={{ color: "#94a3b8", display: "block" }}>IP Address / VLAN</small>
+                <strong style={{ color: "#00e5ff" }}>192.168.1.{100 + (selectedPC.id || 1)} (VLAN 10)</strong>
               </div>
               <div>
-                <small style={{ color: "#94a3b8", display: "block" }}>IP Address</small>
-                <strong style={{ color: "#00e5ff" }}>192.168.1.{100 + (selectedPC.id || 1)}</strong>
+                <small style={{ color: "#94a3b8", display: "block" }}>Power Draw</small>
+                <strong style={{ color: "#f59e0b" }}>185 W (Peak 450W)</strong>
               </div>
-              <div>
-                <small style={{ color: "#94a3b8", display: "block" }}>Power Load</small>
-                <strong style={{ color: "#f59e0b" }}>450 W (Peak)</strong>
+            </div>
+
+            {/* Diagnostic Terminal Section */}
+            <div style={{ marginTop: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>📡 Live ICMP Diagnostic</span>
+                <button
+                  onClick={handleRunPing}
+                  disabled={pingRunning}
+                  style={{
+                    background: pingRunning ? "#334155" : "linear-gradient(135deg, #0284c7, #2563eb)",
+                    color: "white", border: "none", borderRadius: "6px",
+                    padding: "4px 10px", fontSize: "11px", fontWeight: 700, cursor: pingRunning ? "wait" : "pointer"
+                  }}
+                >
+                  {pingRunning ? "Pinging..." : "⚡ Run Ping Test"}
+                </button>
+              </div>
+
+              <div style={{
+                background: "#090d16", border: "1px solid #1e293b", borderRadius: 8,
+                padding: "8px 12px", fontFamily: "monospace", fontSize: 11, color: "#22c55e",
+                maxHeight: 90, overflowY: "auto"
+              }}>
+                {pingOutput ? (
+                  pingOutput.map((line, idx) => <div key={idx} style={{ marginBottom: 2 }}>{line}</div>)
+                ) : (
+                  <div style={{ color: "#64748b" }}>Click 'Run Ping Test' to verify packet transmission & latency to server rack.</div>
+                )}
               </div>
             </div>
 
             <button
-              onClick={() => setSelectedPC(null)}
+              onClick={() => { setSelectedPC(null); setPingOutput(null); }}
               style={{
-                marginTop: 18, width: "100%", padding: "10px", borderRadius: 10,
+                marginTop: 14, width: "100%", padding: "10px", borderRadius: 10,
                 background: "linear-gradient(135deg, #0284c7, #2563eb)", color: "white",
-                border: "none", fontWeight: 700, cursor: "pointer", fontSize: 14
+                border: "none", fontWeight: 700, cursor: "pointer", fontSize: 13
               }}
             >
-              Close Inspector
+              Close Diagnostic Inspector
             </button>
           </div>
         )}
@@ -1489,8 +1882,133 @@ export default function Viewer3D() {
           gl={{ antialias: true }}
         >
           <color attach="background" args={[themeMode === "neon" ? "#030712" : "#eef2f6"]} />
-          <LabScene resetSignal={resetSignal} cameraMode={cameraMode} layoutType={layoutMode} themeMode={themeMode} aiPlan={aiPlan} onSelectPC={setSelectedPC} />
+          <LabScene
+            resetSignal={resetSignal}
+            cameraMode={cameraMode}
+            layoutType={layoutMode}
+            themeMode={themeMode}
+            aiPlan={aiPlan}
+            onSelectPC={setSelectedPC}
+            classroomMode={classroomMode}
+            showCableTrays={showCableTrays}
+          />
         </Canvas>
+
+        {/* Floating Classroom Control Simulator Panel */}
+        <div style={{
+          position: "absolute",
+          right: 22,
+          top: 68,
+          zIndex: 10,
+          background: themeMode === "neon" ? "rgba(15, 23, 42, 0.92)" : "rgba(255, 255, 255, 0.92)",
+          backdropFilter: "blur(8px)",
+          border: themeMode === "neon" ? "1px solid rgba(56, 189, 248, 0.25)" : "1px solid #cbd5e1",
+          borderRadius: "12px",
+          padding: "10px 14px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+          width: "220px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+          fontFamily: "sans-serif"
+        }}>
+          <div style={{
+            fontSize: "11px",
+            fontWeight: 800,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+            color: themeMode === "neon" ? "#94a3b8" : "#475569",
+            marginBottom: "2px"
+          }}>
+            🏫 Classroom Simulator
+          </div>
+
+          {[
+            { id: "normal", label: "🟢 Live OS (Normal)", desc: "Interactive student systems", activeBg: "#10b981", hoverBg: "rgba(16, 185, 129, 0.15)" },
+            { id: "broadcast", label: "🔵 Broadcast Screen", desc: "Mirror master console", activeBg: "#3b82f6", hoverBg: "rgba(59, 130, 246, 0.15)" },
+            { id: "lock", label: "🔴 Lock Screens", desc: "Redirect student focus", activeBg: "#ef4444", hoverBg: "rgba(239, 68, 68, 0.15)" },
+          ].map((mode) => {
+            const isActive = classroomMode === mode.id;
+            return (
+              <button
+                key={mode.id}
+                onClick={() => setClassroomMode(mode.id)}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: isActive ? mode.activeBg : "transparent",
+                  color: isActive ? "#ffffff" : themeMode === "neon" ? "#cbd5e1" : "#1e293b",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  textAlign: "left",
+                  boxShadow: isActive ? "0 4px 10px rgba(0,0,0,0.15)" : "none"
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) e.currentTarget.style.background = mode.hoverBg;
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) e.currentTarget.style.background = "transparent";
+                }}
+              >
+                <span style={{ fontSize: "12px", fontWeight: 700 }}>{mode.label}</span>
+                <span style={{ fontSize: "9px", opacity: 0.8, marginTop: "2px" }}>{mode.desc}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Floating First-Person Walk Mode Compass & HUD */}
+        {cameraMode === "walk" && (
+          <div style={{
+            position: "absolute",
+            top: 22,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 20,
+            background: "rgba(15, 23, 42, 0.94)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid #38bdf8",
+            borderRadius: "16px",
+            padding: "10px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            color: "#ffffff",
+            boxShadow: "0 10px 30px rgba(2, 132, 199, 0.4)",
+            fontFamily: "sans-serif",
+            animation: "pulse 2s infinite"
+          }}>
+            <span style={{ fontSize: "20px" }}>🚶</span>
+            <div>
+              <div style={{ fontSize: "13px", fontWeight: 800, color: "#38bdf8", letterSpacing: "0.5px" }}>
+                FIRST-PERSON WALKTHROUGH ACTIVE
+              </div>
+              <div style={{ fontSize: "11px", color: "#cbd5e1", marginTop: "2px" }}>
+                Use <kbd style={{ background: "#334155", padding: "1px 5px", borderRadius: 4, color: "#38bdf8" }}>W</kbd> <kbd style={{ background: "#334155", padding: "1px 5px", borderRadius: 4, color: "#38bdf8" }}>A</kbd> <kbd style={{ background: "#334155", padding: "1px 5px", borderRadius: 4, color: "#38bdf8" }}>S</kbd> <kbd style={{ background: "#334155", padding: "1px 5px", borderRadius: 4, color: "#38bdf8" }}>D</kbd> or <kbd style={{ background: "#334155", padding: "1px 5px", borderRadius: 4, color: "#38bdf8" }}>Arrow Keys</kbd> to walk · Hold <kbd style={{ background: "#334155", padding: "1px 5px", borderRadius: 4, color: "#38bdf8" }}>SHIFT</kbd> to run · Drag mouse to look around
+              </div>
+            </div>
+            <button
+              onClick={() => { setCameraMode("3d"); setResetSignal((x) => x + 1); }}
+              style={{
+                background: "linear-gradient(135deg, #0284c7, #2563eb)",
+                border: "none",
+                borderRadius: "8px",
+                color: "#ffffff",
+                padding: "6px 12px",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
+              }}
+            >
+              Exit Walk
+            </button>
+          </div>
+        )}
 
         {/* Floating Controls Toolbar */}
         <div className="viewer3d-help" style={{
@@ -1499,9 +2017,19 @@ export default function Viewer3D() {
           background: "rgba(255,255,255,.96)", boxShadow: "0 4px 16px rgba(0,0,0,.1)",
           border: "1px solid #e2e8f0",
         }}>
-          <span>🖱️ Rotate</span>
-          <span>🔍 Zoom</span>
-          <span>🖐️ Pan</span>
+          {cameraMode === "walk" ? (
+            <>
+              <span>🚶 W/A/S/D Walk</span>
+              <span>⚡ Shift Sprint</span>
+              <span>👀 Mouse Look</span>
+            </>
+          ) : (
+            <>
+              <span>🖱️ Rotate</span>
+              <span>🔍 Zoom</span>
+              <span>🖐️ Pan</span>
+            </>
+          )}
         </div>
       </div>
 

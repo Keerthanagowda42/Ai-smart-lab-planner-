@@ -7,7 +7,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Viewer3D from "./pages/Viewer3D";
-import AIChatbot from "./components/AIChatbot";
+import AILabAssistant from "./components/AILabAssistant";
 
 // Lazy-load heavier pages (code-split into separate chunks)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -73,7 +73,7 @@ function App() {
         </Suspense>
 
         {/* Global Floating AI Assistant Chatbot */}
-        <AIChatbot />
+        <AILabAssistant />
       </BrowserRouter>
     </ProjectProvider>
   );

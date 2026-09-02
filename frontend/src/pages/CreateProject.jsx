@@ -142,9 +142,22 @@ function CreateProject() {
             </div>
           </div>
 
-          <button type="submit" className="next-btn">
-            Continue to Detailed Requirements →
-          </button>
+          <div style={{ display: "flex", gap: 15, marginTop: 15 }}>
+            <button type="submit" className="next-btn" style={{ flex: 1 }}>
+              Continue to Detailed Requirements →
+            </button>
+            <button
+              type="button"
+              className="next-btn"
+              style={{ background: "linear-gradient(135deg, #0284c7, #2563eb)", flex: 1 }}
+              onClick={(e) => {
+                handleSubmit(e);
+                navigate("/viewer3d");
+              }}
+            >
+              🎮 Save & Open 3D Viewer →
+            </button>
+          </div>
         </form>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useProject } from "../context/ProjectContext";
+import { exportInstitutionalPDF, exportCADBlueprintSVG } from "../utils/pdfExporter";
 
 const reports = [
   { title: "AI & Data Science Lab Proposal", date: "Aug 14, 2026", type: "Full AI Infrastructure Proposal", status: "Completed", budget: "₹12,30,000", icon: "🖥️" },
@@ -19,7 +20,11 @@ export default function Reports() {
   const { aiPlan, projectData } = useProject();
 
   const handlePrintPdf = () => {
-    window.print();
+    exportInstitutionalPDF(projectData, aiPlan);
+  };
+
+  const handleExportCAD = () => {
+    exportCADBlueprintSVG(projectData, aiPlan);
   };
 
   return (
@@ -42,6 +47,22 @@ export default function Reports() {
             onClick={handlePrintPdf}
             style={{
               padding: "13px 22px",
+              background: "linear-gradient(135deg, #0284c7, #2563eb)",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "14px",
+              fontWeight: 800,
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(2, 132, 199, 0.3)",
+            }}
+          >
+            📄 Download Institutional PDF Report
+          </button>
+          <button
+            onClick={handleExportCAD}
+            style={{
+              padding: "13px 22px",
               background: "#ffffff",
               color: "#0f172a",
               border: "1px solid #cbd5e1",
@@ -52,7 +73,7 @@ export default function Reports() {
               boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
             }}
           >
-            🖨️ Export PDF / Print
+            📐 Export CAD Blueprint (SVG)
           </button>
           <button
             onClick={() => navigate("/create-project")}

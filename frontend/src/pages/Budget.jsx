@@ -2,6 +2,8 @@ import React from "react";
 import "./Budget.css";
 import { useNavigate } from "react-router-dom";
 import { useProject } from "../context/ProjectContext";
+import QuickRequirementBar from "../components/QuickRequirementBar";
+import { exportInstitutionalPDF, exportCADBlueprintSVG } from "../utils/pdfExporter";
 
 function Budget() {
   const navigate = useNavigate();
@@ -10,11 +12,50 @@ function Budget() {
 
   return (
     <div className="budget-page">
-      <div className="budget-card" style={{ maxWidth: 950 }}>
-        <h1>💰 Bill of Materials & Cost Optimization</h1>
-        <p className="subtitle">
-          Itemized budget calculation for <strong>{projectData.name}</strong> ({projectData.numComputers} Workstations)
-        </p>
+      <div style={{ maxWidth: 950, margin: "0 auto", width: "100%" }}>
+        <QuickRequirementBar />
+        <div className="budget-card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h1>💰 Bill of Materials & Cost Optimization</h1>
+            <p className="subtitle">
+              Itemized budget calculation for <strong>{projectData.name}</strong> ({projectData.numComputers} Workstations)
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={() => exportInstitutionalPDF(projectData, aiPlan)}
+              style={{
+                padding: "10px 18px",
+                background: "linear-gradient(135deg, #0284c7, #2563eb)",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "10px",
+                fontWeight: 800,
+                fontSize: "13px",
+                cursor: "pointer",
+                boxShadow: "0 4px 12px rgba(2, 132, 199, 0.3)",
+              }}
+            >
+              📄 Download PDF Report
+            </button>
+            <button
+              onClick={() => exportCADBlueprintSVG(projectData, aiPlan)}
+              style={{
+                padding: "10px 18px",
+                background: "#ffffff",
+                color: "#0f172a",
+                border: "1px solid #cbd5e1",
+                borderRadius: "10px",
+                fontWeight: 700,
+                fontSize: "13px",
+                cursor: "pointer",
+              }}
+            >
+              📐 CAD SVG Blueprint
+            </button>
+          </div>
+        </div>
 
         <div style={{ marginBottom: 25, overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -68,6 +109,7 @@ function Budget() {
         </div>
       </div>
     </div>
+  </div>
   );
 }
 

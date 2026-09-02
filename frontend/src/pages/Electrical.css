@@ -35,15 +35,40 @@
   margin-bottom: 6px;
 }
 
-.subtitle {
-  text-align: center;
-  color: #64748b;
-  font-size: 14px;
-  margin-bottom: 28px;
-  line-height: 1.5;
+/* ── Tab Header ── */
+.electrical-tab-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: #f1f5f9;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
 }
 
-/* ── Electrical Grid ── */
+.electrical-tab-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.electrical-tab-btn.active {
+  background: #ffffff;
+  color: #d97706;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.electrical-tab-btn:hover:not(.active) {
+  color: #0f172a;
+}
 .electrical-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

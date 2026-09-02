@@ -100,6 +100,17 @@ function RequirementForm() {
             <button type="submit" className="next-btn" style={{ flex: 1 }}>
               Generate AI Recommendation & Plan →
             </button>
+            <button
+              type="button"
+              className="next-btn"
+              style={{ background: "linear-gradient(135deg, #0284c7, #2563eb)", flex: 1 }}
+              onClick={(e) => {
+                handleSubmit(e);
+                navigate("/viewer3d");
+              }}
+            >
+              🎮 Save & Open 3D Viewer →
+            </button>
           </div>
         </form>
       </div>

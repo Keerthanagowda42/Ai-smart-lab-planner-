@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Dashboard.css";
+import QuickRequirementBar from "../components/QuickRequirementBar";
 
 const navItems = [
   { icon: "🏠", label: "Dashboard",      path: "/dashboard"      },
@@ -70,6 +71,8 @@ function Dashboard() {
             + New Project
           </button>
         </div>
+
+        <QuickRequirementBar />
 
         {/* Stats cards */}
         <div className="cards">
