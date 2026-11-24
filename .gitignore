@@ -31,3 +31,5 @@ yarn-error.log*
 # Conference Paper & Documentation (Do not push)
 documentation/
 *.tex
+
+*.zip
